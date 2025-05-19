@@ -752,54 +752,154 @@ function ItemProperties.score_prop(props,reqs)
 	return score
 end
 
+local lrc = "lower reagent cost"
+local lmc = "lower mana cost"
+local sdi = "spell damage increase"
+local fcr = "faster cast recovery"
+local fc = "faster casting"
+local hci = "hit chance increase"
+local dci = "defence chance increase"
+local luck = "luck"
+local strength_bonus = "strength bonus"
+local dex_bonus = "dexterity bonus"
+local int_bonus = "intelligence bonus"
+local hpi = "hit point increase"
+local stamina_increase = "stamina increase"
+local mana_increase = "mana increase"
+local mr = "mana regeneration"
+local physical_resist = "physical resist"
+local fire_resist = "fire resist"
+local cold_resist = "cold resist"
+local poison_resist = "poison resist"
+local energy_resist = "energy resist"
+local mage_armor = "mage armor"
+
+
 function ItemProperties.score_as_mage_jewelry(props)
-	local reqs = {{"spell damage increase",15},{"faster cast recovery",3}}
+	local reqs = {{sdi,15},{fcr,3}}
 	if not ItemProperties.prop_has_reqs(props,reqs) then
 		return 0
 	end
-	reqs = {{"lower reagent cost",1},{"faster casting",20},{"faster cast recovery",5},{"lower mana cost",2},{"spell damage increase",20/18}}
+	reqs = {{luck,1./20},{fc,20},{fcr,5},{lmc,2},{sdi,20./18}}
 	return ItemProperties.score_prop(props,reqs)+20
 end
 
 function ItemProperties.score_as_tamer_jewelry(props)
-	local reqs = {{"luck",100}}
+	local reqs = {{luck,100}}
 	if ItemProperties.prop_has_reqs(props,reqs) then 
-		reqs = {{"lower reagent cost",1},{"faster casting",20},{"faster cast recovery",5},{"lower mana cost",2}}
+		reqs = {{lrc,1},{fc,20},{fcr,5},{lmc,2}}
 		return ItemProperties.score_prop(props,reqs)+20
 	end
 	return 0
 end
 
 function ItemProperties.score_as_fighter_jewelry(props)
-	local reqs = {{"hit chance increase",15},{"swing speed increase",10}}
+	local reqs = {{hci,15},{ssi,10}}
 	return ItemProperties.prop_has_reqs(props,reqs)
 end
 
 function ItemProperties.score_as_mage_armor(props)
-	local reqs = {{"lower reagent cost",2},{"strength bonus",2},{"hit point increase",.6},{"intelligence bonus",1},
-	{"mana increase",1.1},{"lower mana cost",.6},{"mana regeneration",.5},
-	{"physical resist",.8},{"fire resist",.6},{"cold resist",.5},{"energy resist",.5},{"poison resist",.5}}
+	local requirements = {{lrc, 15}, {lmc, 6}}
+	if not ItemProperties.prop_has_reqs(props,requirements) then
+		return 0
+	end
+	local reqs = {{lrc,2},{strength_bonus,.5},{hpi,2},{int_bonus,.5},
+	{mana_increase,.2},{lmc,.6},{mr,1},
+	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
 	return ItemProperties.score_prop(props,reqs)
 end
 
+
 function ItemProperties.score_as_tamer_armor(props)
-	local reqs = {{"lower reagent cost",3},{"strength bonus",.15},{"hit point increase",.04},{"intelligence bonus",.08},{"luck",1},
-	{"mana increase",.1},{"lower mana cost",.04},{"mana regeneration",.05},
-	{"physical resist",.07},{"fire resist",.06},{"cold resist",.05},{"energy resist",.05},{"poison resist",.05}}
+	local requirements = {{lrc, 15}, {lmc, 6}, {luck, 1}}
+	if not ItemProperties.prop_has_reqs(props,requirements) then
+		return 0
+	end
+	local reqs = {{lrc,1},{strength_bonus,.2},{hpi,.4},{int_bonus,.8},{luck,.2},
+	{mana_increase,.5},{lmc,2},{mr,1},
+	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
 	return ItemProperties.score_prop(props,reqs)
 end
 
 function ItemProperties.score_as_fighter_armor(props)
 	local score=0
-	local reqs = {{"strength bonus",1},{"hit point increase",.4},{"intelligence bonus",1},{"dexterity bonus",1},{"stamina increase",1},
-	{"mana increase",1},{"lower mana cost",8},{"mana regeneration",1},
-	{"physical resist",.5},{"fire resist",.4},{"cold resist",.3},{"energy resist",.3},{"poison resist",.3}}
-	if ItemProperties.prop_has_reqs(props,{{"mage armor",-100}}) then
+	local reqs = {{strength_bonus,1},{hpi,.4},{int_bonus,1},{dex_bonus,1},{stamina_increase,2},
+	{mana_increase,1},{lmc,3},{mr,1},
+	{physical_resist,.6},{fire_resist,.5},{cold_resist,.3},{poison_resist,.3},{energy_resist,.4}}
+	if ItemProperties.prop_has_reqs(props,{{mage_armor,-100}}) then
 		score=score-30
 	end
 	return score+ItemProperties.score_prop(props,reqs)
 end
 
+
+function ItemProperties.is_helmet(item_name)
+	local helmet_names = {
+		"Leather Cap",
+		"Leather Jingasa",
+		"Leather Ninja Hood",
+		"Bone Helmet",
+		"Orc Helm",
+		"Dragon Turtle Helm",
+		"Tiger Pelt Helm",
+
+		"Chainmail Coif",
+		"Bascinet",
+		"Close Helmet",
+		"Helmet",
+		"Norse Helm",
+		"Plate Helm",
+		"Chainmail Hatsuburi",
+		"Platemail Hatsuburi",
+		"Heavy Platemail Jingasa",
+		"Light Platemail Jingasa",
+		"Small Platemail Jingasa",
+		"Decorative Platemail Kabuto",
+		"Platemail Battle Kabuto",
+		"Standard Platemail Kabuto",
+		"Circlet",
+		"Royal Circlet",
+		"Gemmed Circlet",
+		"Dragon Helm",
+
+		"Raven Helm",
+		"Vulture Helm",
+		"Winged Helm",
+
+		"Elven Glasses",
+		"Kabuto",
+		"Helm of Spirituality",
+		"Helm of Swiftness",
+	
+		"Skullcap",
+		"Bandana",
+		"Floppy Hat",
+		"Cap",
+		"Brim Hat",
+		"Straw Hat",
+		"Tall Straw Hat",
+		"Wizard's Hat",
+		"Bonnet",
+		"Feathered Hat",
+		"Tricorne Hat",
+		"Jester Hat",
+		"Flower Garland",
+		"Cloth Ninja Hood",
+		"Kasa",
+		"Bear Mask",
+		"Deer Mask",
+		"Orc Mask",
+		"Tribal Mask",
+
+		"earring" --gargoyle moment
+	}
+	for i=1, #helmet_names do
+		if item_name:find(helmet_names[i]) then
+			return true
+		end
+	end
+	return false
+end
 
 function ItemProperties.score(props)
 	local params = ItemProperties.BuildParamsArray(props)
@@ -820,6 +920,12 @@ function ItemProperties.score(props)
 		diagnosis.print="HEAVY TRASH"
 		return diagnosis
 	end
+
+	
+	
+
+
+
 	local item_title = tostring(props.PropertiesList[1])
 	if (item_title:find("Ring") and not item_title:find("Ringm")) or item_title:find("Bracelet") then
 		local mjscore = ItemProperties.score_as_mage_jewelry(props)
@@ -845,13 +951,15 @@ function ItemProperties.score(props)
 	end
 	local wscore = ItemProperties.score_as_mage_armor(props)
 	local fscore = 0
-	if item_title:find("Studded")  or item_title:find("Hide")  or item_title:find("Stone") or item_title:find("Bone") then
+	local item_is_lmc_overcapper = item_title:find("Studded")  or item_title:find("Hide")  or item_title:find("Stone") or item_title:find("Bone")
+	local item_is_helmet = ItemProperties.is_helmet(item_title)
+	if item_is_lmc_overcapper or item_is_helmet then
 		fscore = ItemProperties.score_as_fighter_armor(props)
 	end
 	local tscore = ItemProperties.score_as_tamer_armor(props)
 	diagnosis.take=false
 	diagnosis.print=string.format("wiz: %.2f dex: %.2f tame: %.2f",wscore,fscore,tscore)
-	if wscore >= 90 or fscore>85 or tscore>160 then
+	if wscore >= 90 or fscore>60 or tscore>60 then
 		diagnosis.take=true
 	end
 	return diagnosis
