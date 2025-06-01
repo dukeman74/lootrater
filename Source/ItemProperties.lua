@@ -318,6 +318,7 @@ function ItemProperties.UpdateItemPropertiesData()
 		
 		for i = 1, numLabels do
 			--Debug.Print("inside numlabel loop") -- ebm
+			--Debug.Print(labelText) -- ebm
 			labelName = "ItemPropertiesItemLabel"..i
 			LabelSetText(labelName, labelText[i])
 			LabelSetTextColor(labelName, labelColors[i].r, labelColors[i].g, labelColors[i].b)
@@ -774,6 +775,7 @@ local cold_resist = "cold resist"
 local poison_resist = "poison resist"
 local energy_resist = "energy resist"
 local mage_armor = "mage armor"
+local spell_channeling = "spell channeling"
 
 
 function ItemProperties.score_as_mage_jewelry(props)
@@ -841,6 +843,21 @@ function ItemProperties.score_as_fighter_armor(props)
 		score=score-30
 	end
 	return score+ItemProperties.score_prop(props,reqs)
+end
+
+function ItemProperties.score_as_shield(props)
+	-- doesn't work
+	--if not ItemProperties.prop_has_reqs(props,{{spell_channeling,-100}}) then
+	--	return -1000
+	--end
+	local casting = ItemProperties.score_prop(props,{{fc, 10}})
+	if casting < 0 then
+		return -1000
+	end
+	local reqs = {{lrc,2},{strength_bonus,.5},{hpi,2},{int_bonus,.5},
+	{mana_increase,.2},{lmc,.6},{mr,1}, {luck, .1}, {fc, 10}, {fcr, 2},
+	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
+	return ItemProperties.score_prop(props,reqs)
 end
 
 
@@ -912,6 +929,42 @@ function ItemProperties.is_helmet(item_name)
 	return false
 end
 
+function ItemProperties.is_bis(item_name)
+	local bis_list = {
+		"Shroud Of The",
+		"Robe Of",
+		"Crimson",
+		"Tangle",
+		"Quiver",
+		"Paroxysmus Swamp",
+		"Enchanted Sash",
+		"Of The Royal Guard",
+		"Lieutenant",
+		"Hawkwind",
+		"Mana Phasing",
+		"Of Sending",
+	}
+	for i=1, #bis_list do
+		if item_name:find(bis_list[i]) then
+			return true
+		end
+	end
+	return false
+end
+
+function ItemProperties.is_shield(item_name)
+	local shield_list = {
+		"Shield",
+		"Hephaestus",
+	}
+	for i=1, #shield_list do
+		if item_name:find(shield_list[i]) then
+			return true
+		end
+	end
+	return false
+end
+
 function ItemProperties.is_medable(item_name, props)
 	if ItemProperties.prop_has_reqs(props,{{mage_armor,-100}}) then
 		return true
@@ -938,7 +991,6 @@ function ItemProperties.is_medable(item_name, props)
 end
 
 function ItemProperties.score(props)
-	local params = ItemProperties.BuildParamsArray(props)
 	local diagnosis={}
 	local weight = ItemProperties.GetPropWeight(props)
 	if weight==0 then
@@ -985,6 +1037,26 @@ function ItemProperties.score(props)
 		diagnosis.print="JEWELRY TRASH"
 		return diagnosis
 	end
+	if ItemProperties.is_bis(item_title) then
+		diagnosis.take=true
+		diagnosis.print="BIS"
+		return diagnosis
+	end
+	if ItemProperties.is_shield(item_title) then
+		-- cant get spell channeling. sadge
+
+		local shield_score = ItemProperties.score_as_shield(props)
+		if shield_score > 0 then
+			diagnosis.take=true
+			diagnosis.print=string.format("Shield, Maybe %.2f", tostring(shield_score))
+		else
+			diagnosis.take=false
+			diagnosis.print="Bad Shield"
+		end
+		
+		return diagnosis
+	end
+	
 	local medable = ItemProperties.is_medable(item_title, props)
 	local wscore = 0
 	local tscore = 0
@@ -1048,8 +1120,8 @@ function ItemProperties.GetItemStats(itemId)
 
 	if (props) then
 		local params = ItemProperties.BuildParamsArray( props )			
-		Debug.Print("stated fields:")
-		Debug.Print(params)
+		--Debug.Print("stated fields:")
+		--Debug.Print(params)
 		weight = params[1072225][1]
 		if (weight == nil) then
 			weight = params[1072788][1]
@@ -1058,18 +1130,18 @@ function ItemProperties.GetItemStats(itemId)
 			end 
 		end
 
-		Debug.Print("happy printed all props:")
+		--Debug.Print("happy printed all props:")
 		for j = 1, #props.PropertiesTids do		
 			local x = GetStringFromTid(props.PropertiesTids[j])
-			Debug.Print("tid="..tostring(props.PropertiesTids[j]).." "..tostring(x))
+			--Debug.Print("tid="..tostring(props.PropertiesTids[j]).." "..tostring(x))
 			val = params[props.PropertiesTids[j]]
 			if val then
 				for k = 1, #val do
-					Debug.Print(val[k])
+					--Debug.Print(val[k])
 				end
 			end
 		end
-		Debug.Print("--------------------")
+		--Debug.Print("--------------------")
 --		Debug.Print("weight = : "..tostring(weight))
 		return tonumber(weight)
 
