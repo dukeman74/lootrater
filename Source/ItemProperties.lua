@@ -820,6 +820,16 @@ function ItemProperties.score_as_tamer_armor(props)
 	{mana_increase,.5},{lmc,2},{mr,1},
 	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
 	return ItemProperties.score_prop(props,reqs)
+end 
+
+function ItemProperties.score_as_bard_armor(props)
+	local requirements = {{mr, 3}, {lmc,6}}
+	if not ItemProperties.prop_has_reqs(props,requirements) then
+		return 0
+	end
+	local reqs = {{lmc,2},{mr,10},{int_bonus,.8},{luck,.2},
+	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
+	return ItemProperties.score_prop(props,reqs)
 end
 
 function ItemProperties.score_as_fighter_armor(props)
@@ -902,6 +912,31 @@ function ItemProperties.is_helmet(item_name)
 	return false
 end
 
+function ItemProperties.is_medable(item_name, props)
+	if ItemProperties.prop_has_reqs(props,{{mage_armor,-100}}) then
+		return true
+	end
+	-- definitely not medable if
+	local non_medable = {
+		"Studded",
+		"Hide",
+		"Stone",
+		"Bone",
+		"Ring",
+		"Chain",
+		"Plate",
+		"Barbed",
+		"Dragon",
+		"Woodland",
+	}
+	for i=1, #non_medable do
+		if item_name:find(non_medable[i]) then
+			return false
+		end
+	end
+	return true
+end
+
 function ItemProperties.score(props)
 	local params = ItemProperties.BuildParamsArray(props)
 	local diagnosis={}
@@ -950,17 +985,26 @@ function ItemProperties.score(props)
 		diagnosis.print="JEWELRY TRASH"
 		return diagnosis
 	end
-	local wscore = ItemProperties.score_as_mage_armor(props)
+	local medable = ItemProperties.is_medable(item_title, props)
+	local wscore = 0
+	local tscore = 0
 	local fscore = 0
+	local bscore = 0
+	local format_string = "|No| wiz: %.2f dex: %.2f tame: %.2f bard: %.2f"
+	if medable then
+		format_string = "|Med| wiz: %.2f dex: %.2f tame: %.2f bard: %.2f"
+		wscore = ItemProperties.score_as_mage_armor(props)
+		tscore = ItemProperties.score_as_tamer_armor(props)
+		bscore = ItemProperties.score_as_bard_armor(props)
+	end
 	local item_is_lmc_overcapper = item_title:find("Studded")  or item_title:find("Hide")  or item_title:find("Stone") or item_title:find("Bone")
 	local item_is_helmet = ItemProperties.is_helmet(item_title)
 	if item_is_lmc_overcapper or item_is_helmet then
 		fscore = ItemProperties.score_as_fighter_armor(props)
 	end
-	local tscore = ItemProperties.score_as_tamer_armor(props)
 	diagnosis.take=false
-	diagnosis.print=string.format("wiz: %.2f dex: %.2f tame: %.2f",wscore,fscore,tscore)
-	if wscore >= 90 or fscore>60 or tscore>60 then
+	diagnosis.print=string.format(format_string,wscore,fscore,tscore,bscore)
+	if wscore >= 85 or fscore>60 or tscore>60 or bscore>30 then
 		diagnosis.take=true
 	end
 	return diagnosis
