@@ -943,6 +943,12 @@ function ItemProperties.is_bis(item_name)
 		"Hawkwind",
 		"Mana Phasing",
 		"Of Sending",
+		"Mature",
+		"Yukio",
+		"Enchanted Kelp",
+		"Crown Of Arcane",
+		"Aegis Of Grace",
+
 	}
 	for i=1, #bis_list do
 		if item_name:find(bis_list[i]) then
