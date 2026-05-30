@@ -708,12 +708,30 @@ function ItemProperties.prop_has_reqs(props,reqs)
 		this_valid=false
 		needed_prop=reqs[i][1]
 		needed_value=reqs[i][2]
-		--Debug.Print("looking for: "..needed_prop)
+		if needed_prop:find("!skill!") then
+			for j = 1, #props.PropertiesTids do
+				local x = tostring(GetStringFromTid(props.PropertiesTids[j]))
+				local val = params[props.PropertiesTids[j]]
+				if val then
+					if x:find("skillname") then
+						local skill_id = val[1]
+						local skill_text = GetStringFromTid(tonumber(string.sub(tostring(skill_id), 2)))
+						if needed_prop:find(tostring(skill_text)) then
+							if tonumber(val[2])>=needed_value then
+								this_valid=true
+								break
+							end
+						end
+					end
+				end
+			end
+		end
 		for j = 1, #props.PropertiesTids do
 			local x = tostring(GetStringFromTid(props.PropertiesTids[j]))
 			local val = params[props.PropertiesTids[j]]
 			if val then
 				--Debug.Print(x)
+				--Debug.Print(val)
 				if x:find(needed_prop) then
 					--Debug.Print("found: "..needed_prop.." on the item")
 					--Debug.Print("of strength " .. tostring(val[1]) .. " we wanted at least " .. tostring(needed_value))
@@ -792,6 +810,15 @@ function ItemProperties.score_as_tamer_jewelry(props)
 	if ItemProperties.prop_has_reqs(props,reqs) then 
 		reqs = {{lrc,1},{fc,20},{fcr,5},{lmc,2}}
 		return ItemProperties.score_prop(props,reqs)+20
+	end
+	return 0
+end
+
+function ItemProperties.score_as_tomoe_jewelry(props)
+	local reqs = {{fcr,3}, {fc, 1}, {lrc, 20}, {"!skill!resisting spells", 15}}
+	if ItemProperties.prop_has_reqs(props,reqs) then 
+		reqs = {{lmc,5}, {dci, 5}, {lrc, 1}}
+		return ItemProperties.score_prop(props,reqs)+50
 	end
 	return 0
 end
@@ -1037,6 +1064,12 @@ function ItemProperties.score(props)
 		if tjscore >= 50 then
 			diagnosis.take=true
 			diagnosis.print=string.format("Tamer Jewelry %.2f", tostring(tjscore))
+			return diagnosis
+		end
+		local tojscore = ItemProperties.score_as_tomoe_jewelry(props)
+		if tojscore > 0 then
+			diagnosis.take=true
+			diagnosis.print=string.format("Tomoe Jewelry %.2f", tostring(tojscore))
 			return diagnosis
 		end
 		diagnosis.take=false
