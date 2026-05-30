@@ -829,7 +829,7 @@ function ItemProperties.score_as_bard_armor(props)
 	if not ItemProperties.prop_has_reqs(props,requirements) then
 		return 0
 	end
-	local reqs = {{lmc,2},{mr,10},{int_bonus,.8},{luck,.2},
+	local reqs = {{lmc,2},{mr,10},{int_bonus,.8},{luck,.2},{hpi, 1}, {strength_bonus, 1},
 	{physical_resist,.7},{fire_resist,.6},{cold_resist,.4},{poison_resist,.4},{energy_resist,.5}}
 	return ItemProperties.score_prop(props,reqs)
 end
@@ -1082,7 +1082,7 @@ function ItemProperties.score(props)
 	end
 	diagnosis.take=false
 	diagnosis.print=string.format(format_string,wscore,fscore,tscore,bscore)
-	if wscore >= 85 or fscore>60 or tscore>60 or bscore>30 then
+	if wscore >= 85 or fscore>60 or tscore>60 or bscore>90 then
 		diagnosis.take=true
 	end
 	return diagnosis
